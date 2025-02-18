@@ -1,0 +1,37 @@
+{
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.1",
+    "@simplewebauthn/server": "13.0.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.3",
+    "memorystore": "^1.6.7",
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0",
+    "@types/express": "^4.17.13",
+    "@types/express-session": "^1.17.5",
+    "@types/node": "^20.11.20",
+    "@types/node-fetch": "^2.5.12",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.1.6"
+  },
+  "private": true
+}

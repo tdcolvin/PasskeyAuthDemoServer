@@ -1,0 +1,15 @@
+[
+    {
+      "relation" : [
+        "delegate_permission/common.handle_all_urls",
+        "delegate_permission/common.get_login_creds"
+      ],
+      "target" : {
+        "namespace" : "android_app",
+        "package_name" : "com.tdcolvin.passkeyauthdemo",
+        "sha256_cert_fingerprints" : [
+          "8D:0D:C9:F3:9C:6B:51:E8:BA:EF:AB:A4:02:97:48:95:82:FC:28:62:9C:82:D9:D7:53:44:E7:4D:72:44:C4:FA"
+        ]
+      }
+    }
+  ]
