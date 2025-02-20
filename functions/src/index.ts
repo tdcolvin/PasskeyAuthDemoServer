@@ -9,5 +9,8 @@
 
 import {onRequest} from "firebase-functions/v2/https";
 import { app } from "./simplewebauthn/index";
+import * as admin from "firebase-admin";
+
+admin.initializeApp();
 
 export const auth = onRequest(app);
