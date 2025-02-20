@@ -4,10 +4,10 @@
  * The webpages served from ./public use @simplewebauthn/browser.
  */
 
-import express from 'express';
+import dotenv from 'dotenv';
+import express, { Request } from 'express';
 import session from 'express-session';
 import memoryStore from 'memorystore';
-import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -29,7 +29,8 @@ import {
   WebAuthnCredential,
 } from '@simplewebauthn/server';
 
-import { LoggedInUser } from './example-server';
+import { addUser, addUserCredential, getUserByUsername } from './database';
+import { getSession, updateSession } from './session';
 
 export const app = express();
 const MemoryStore = memoryStore(session);
@@ -78,7 +79,7 @@ export const rpID = RP_ID;
 // This value is set at the bottom of page as part of server initialization (the empty string is
 // to appease TypeScript until we determine the expected origin based on whether or not HTTPS
 // support is enabled)
-export let expectedOrigin = '';
+export const expectedOrigin = `https://${rpID}`;
 
 /**
  * 2FA and Passwordless WebAuthn flows expect you to be able to uniquely identify the user that
@@ -88,29 +89,22 @@ export let expectedOrigin = '';
  *
  * Here, the example server assumes the following user has completed login:
  */
-const loggedInUserId = 'internalUserId';
 
-const inMemoryUserDB: { [loggedInUserId: string]: LoggedInUser } = {
-  [loggedInUserId]: {
-    id: loggedInUserId,
-    username: `user@${rpID}`,
-    credentials: [],
-  },
-};
+
 
 /**
  * Registration (a.k.a. "Registration")
  */
-app.get('/generate-registration-options', async (req, res) => {
-  const user = inMemoryUserDB[loggedInUserId];
+app.get('/generate-registration-options', async (req: Request<unknown, unknown, unknown, { username: string }>, res) => {
+  const { username } = req.query;
+  if (!username) {
+    return res.status(400).send({ error: "Please specify a user name as ?username=XXX" });
+  }
 
-  const {
-    /**
-     * The username can be a human-readable name, email, etc... as it is intended only for display.
-     */
-    username,
-    credentials,
-  } = user;
+  const user = await getUserByUsername(username);
+  if (user) {
+    return res.status(400).send({ error: "User with that username already exists" });
+  }
 
   const opts: GenerateRegistrationOptionsOpts = {
     rpName: 'SimpleWebAuthn Example',
@@ -118,17 +112,6 @@ app.get('/generate-registration-options', async (req, res) => {
     userName: username,
     timeout: 60000,
     attestationType: 'none',
-    /**
-     * Passing in a user's list of already-registered credential IDs here prevents users from
-     * registering the same authenticator multiple times. The authenticator will simply throw an
-     * error in the browser if it's asked to perform registration when it recognizes one of the
-     * credential ID's.
-     */
-    excludeCredentials: credentials.map((cred) => ({
-      id: cred.id,
-      type: 'public-key',
-      transports: cred.transports,
-    })),
     authenticatorSelection: {
       residentKey: 'discouraged',
       /**
@@ -146,27 +129,29 @@ app.get('/generate-registration-options', async (req, res) => {
 
   const options = await generateRegistrationOptions(opts);
 
-  /**
-   * The server needs to temporarily remember this value for verification, so don't lose it until
-   * after you verify the registration response.
-   */
-  req.session.currentChallenge = options.challenge;
+  await updateSession(req.session.id, {
+    expectedChallenge: options.challenge,
+    requestedUsername: username,
+    precreatedUserId: options.user.id
+  });
 
-  res.send(options);
+  return res.send(options);
 });
 
 app.post('/verify-registration', async (req, res) => {
   const body: RegistrationResponseJSON = req.body;
 
-  const user = inMemoryUserDB[loggedInUserId];
-
-  const expectedChallenge = req.session.currentChallenge;
+  console.log("sessionID="+req.session.id);
+  const session = await getSession(req.session.id);
+  if (!session || !session.precreatedUserId || !session.requestedUsername) {
+    return res.status(400).send({ error: "Failed to read session, did you call /generate-registration-options?" });
+  }
 
   let verification: VerifiedRegistrationResponse;
   try {
     const opts: VerifyRegistrationResponseOpts = {
       response: body,
-      expectedChallenge: `${expectedChallenge}`,
+      expectedChallenge: `${session.expectedChallenge}`,
       expectedOrigin,
       expectedRPID: rpID,
       requireUserVerification: false,
@@ -182,10 +167,6 @@ app.post('/verify-registration', async (req, res) => {
 
   if (verified && registrationInfo) {
     const { credential } = registrationInfo;
-
-    const existingCredential = user.credentials.find((cred) => cred.id === credential.id);
-
-    if (!existingCredential) {
       /**
        * Add the returned credential to the user's list of credentials
        */
@@ -195,11 +176,12 @@ app.post('/verify-registration', async (req, res) => {
         counter: credential.counter,
         transports: body.response.transports,
       };
-      user.credentials.push(newCredential);
-    }
+
+      await addUser(session.precreatedUserId, session.requestedUsername);
+      await addUserCredential(session.precreatedUserId, newCredential);
   }
 
-  req.session.currentChallenge = undefined;
+  await updateSession(req.session.id, { expectedChallenge: null, requestedUsername: null })
 
   return res.send({ verified });
 });
@@ -207,9 +189,19 @@ app.post('/verify-registration', async (req, res) => {
 /**
  * Login (a.k.a. "Authentication")
  */
-app.get('/generate-authentication-options', async (req, res) => {
+app.get('/generate-authentication-options', async (req: Request<unknown, unknown, unknown, { username: string }>, res) => {
   // You need to know the user by this point
-  const user = inMemoryUserDB[loggedInUserId];
+  const { username } = req.query;
+  if (!username) {
+    return res.status(400).send({ error: "Please specify user name" });
+  }
+
+  const user = await getUserByUsername(username);
+  if (!user) {
+    return res.status(400).send({ error: "No such user" });
+  }
+
+  console.log("User", user);
 
   const opts: GenerateAuthenticationOptionsOpts = {
     timeout: 60000,
@@ -228,22 +220,24 @@ app.get('/generate-authentication-options', async (req, res) => {
   };
 
   const options = await generateAuthenticationOptions(opts);
+  await updateSession(req.session.id, { expectedChallenge: options.challenge, signInUsername: username });
 
-  /**
-   * The server needs to temporarily remember this value for verification, so don't lose it until
-   * after you verify the authentication response.
-   */
-  req.session.currentChallenge = options.challenge;
-
-  res.send(options);
+  return res.send(options);
 });
 
 app.post('/verify-authentication', async (req, res) => {
   const body: AuthenticationResponseJSON = req.body;
 
-  const user = inMemoryUserDB[loggedInUserId];
+  const { expectedChallenge, signInUsername} = await getSession(req.session.id);
 
-  const expectedChallenge = req.session.currentChallenge;
+  if (!expectedChallenge || !signInUsername) {
+    return res.status(400).send({ error: "Call /generate-authentication-options" });
+  }
+
+  const user = await getUserByUsername(signInUsername);
+  if (!user) {
+    return res.status(400).send({ error: "No such user" });
+  }
 
   let dbCredential: WebAuthnCredential | undefined;
   // "Query the DB" here for a credential matching `cred.id`
@@ -284,7 +278,7 @@ app.post('/verify-authentication', async (req, res) => {
     dbCredential.counter = authenticationInfo.newCounter;
   }
 
-  req.session.currentChallenge = undefined;
+  await updateSession(req.session.id, { expectedChallenge: null, signInUsername: null });
 
   return res.send({ verified });
 });
