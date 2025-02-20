@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "users": {
+      ".read": false,
+      ".write": false,
+      ".indexOn": "username"
+    },
+    ".read": false,
+    ".write": false
+  }
+}

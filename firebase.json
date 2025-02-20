@@ -17,14 +17,19 @@
   ],
   "hosting": {
     "public": "public",
-    "rewrites": [{
-      "source": "**",
-      "function": "auth"
-    }],
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "auth"
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ]
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }
