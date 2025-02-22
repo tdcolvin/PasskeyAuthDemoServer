@@ -110,6 +110,7 @@ app.get('/generate-registration-options', async (req: Request<unknown, unknown, 
     rpName: 'SimpleWebAuthn Example',
     rpID,
     userName: username,
+    userDisplayName: username,
     timeout: 60000,
     attestationType: 'none',
     authenticatorSelection: {
