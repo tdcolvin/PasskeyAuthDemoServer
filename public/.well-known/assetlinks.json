@@ -8,7 +8,9 @@
         "namespace" : "android_app",
         "package_name" : "com.tdcolvin.passkeyauthdemo",
         "sha256_cert_fingerprints" : [
-          "8D:0D:C9:F3:9C:6B:51:E8:BA:EF:AB:A4:02:97:48:95:82:FC:28:62:9C:82:D9:D7:53:44:E7:4D:72:44:C4:FA"
+          "8D:0D:C9:F3:9C:6B:51:E8:BA:EF:AB:A4:02:97:48:95:82:FC:28:62:9C:82:D9:D7:53:44:E7:4D:72:44:C4:FA",
+          "81:D9:0F:38:AF:27:FE:E9:0E:9E:0E:8E:1A:DA:E3:AB:B1:D4:F5:5E:04:6D:74:83:4D:A9:5C:B8:E3:18:12:B6",
+          "1F:C6:9A:27:1D:E5:39:90:9A:C5:59:EC:65:4E:7F:FC:02:E4:56:35:C9:00:B0:35:D6:BB:5E:80:41:34:2D:D7"
         ]
       }
     }
