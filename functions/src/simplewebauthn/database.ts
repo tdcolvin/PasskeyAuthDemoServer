@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import { LoggedInUser } from "./example-server";
 
 export async function getUserByUsername(username: string): Promise<LoggedInUser | undefined> {
-    const dataSnapshot = await admin.database().ref("users").orderByChild("username").startAt(username).limitToFirst(1).get();
+    const dataSnapshot = await admin.database().ref("users").orderByChild("username").equalTo(username).limitToFirst(1).get();
     if (!dataSnapshot.exists()) {
         return undefined;
     }
