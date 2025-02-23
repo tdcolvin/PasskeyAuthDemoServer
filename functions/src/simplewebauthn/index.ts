@@ -120,7 +120,7 @@ app.get('/generate-registration-options', async (req: Request<unknown, unknown, 
     timeout: 60000,
     attestationType: 'none',
     authenticatorSelection: {
-      residentKey: 'discouraged',
+      residentKey: 'required',
       /**
        * Wondering why user verification isn't required? See here:
        *
