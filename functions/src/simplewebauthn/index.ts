@@ -102,11 +102,13 @@ export const expectedOrigin = [
 app.get('/generate-registration-options', async (req: Request<unknown, unknown, unknown, { username: string }>, res) => {
   const { username } = req.query;
   if (!username) {
+    console.error("No username specified");
     return res.status(400).send({ error: "Please specify a user name as ?username=XXX" });
   }
 
   const user = await getUserByUsername(username);
   if (user) {
+    console.error("User with username " + username + " already exists");
     return res.status(400).send({ error: "User with that username already exists" });
   }
 
@@ -140,6 +142,8 @@ app.get('/generate-registration-options', async (req: Request<unknown, unknown, 
     precreatedUserId: options.user.id
   });
 
+  console.log("updated sessionID="+req.session.id + " session=", await getSession(req.session.id));
+
   return res.send(options);
 });
 
@@ -149,6 +153,7 @@ app.post('/verify-registration', async (req, res) => {
   console.log("sessionID="+req.session.id);
   const session = await getSession(req.session.id);
   if (!session || !session.precreatedUserId || !session.requestedUsername) {
+    console.error("Failed to read session, session=", session ?? "[undefined]");
     return res.status(400).send({ error: "Failed to read session, did you call /generate-registration-options?" });
   }
 
