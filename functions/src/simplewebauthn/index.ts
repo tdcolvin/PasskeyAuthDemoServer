@@ -79,7 +79,11 @@ export const rpID = RP_ID;
 // This value is set at the bottom of page as part of server initialization (the empty string is
 // to appease TypeScript until we determine the expected origin based on whether or not HTTPS
 // support is enabled)
-export const expectedOrigin = `https://${rpID}`;
+export const expectedOrigin = [
+  `https://${rpID}`,
+  "android:apk-key-hash:H8aaJx3lOZCaxVnsZU5__ALkVjXJALA11rtegEE0Ldc",   // signed using the keystore in the app folder
+  "android:apk-key-hash:gdkPOK8n_ukOng6OGtrjq7HU9V4EbXSDTalcuOMYErY",   // signed using laptop debug keystore
+];
 
 /**
  * 2FA and Passwordless WebAuthn flows expect you to be able to uniquely identify the user that
