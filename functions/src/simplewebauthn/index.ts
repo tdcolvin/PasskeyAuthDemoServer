@@ -113,7 +113,7 @@ app.get('/generate-registration-options', async (req: Request<unknown, unknown, 
   }
 
   const opts: GenerateRegistrationOptionsOpts = {
-    rpName: 'SimpleWebAuthn Example',
+    rpName: "Tom's secret site",
     rpID,
     userName: username,
     userDisplayName: username,
