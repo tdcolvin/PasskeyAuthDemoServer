@@ -82,7 +82,6 @@ export const rpID = RP_ID;
 export const expectedOrigin = [
   `https://${rpID}`,
   "android:apk-key-hash:H8aaJx3lOZCaxVnsZU5__ALkVjXJALA11rtegEE0Ldc",   // signed using the keystore in the app folder
-  "android:apk-key-hash:gdkPOK8n_ukOng6OGtrjq7HU9V4EbXSDTalcuOMYErY",   // signed using laptop debug keystore
 ];
 
 /**
