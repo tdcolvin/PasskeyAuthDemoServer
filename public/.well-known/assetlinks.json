@@ -1,15 +1,15 @@
 [
-    {
-      "relation" : [
-        "delegate_permission/common.handle_all_urls",
-        "delegate_permission/common.get_login_creds"
-      ],
-      "target" : {
-        "namespace" : "android_app",
-        "package_name" : "com.tdcolvin.passkeyauthdemo",
-        "sha256_cert_fingerprints" : [
-          "1F:C6:9A:27:1D:E5:39:90:9A:C5:59:EC:65:4E:7F:FC:02:E4:56:35:C9:00:B0:35:D6:BB:5E:80:41:34:2D:D7"
-        ]
-      }
+  {
+    "relation" : [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target" : {
+      "namespace" : "android_app",
+      "package_name" : "com.tdcolvin.passkeyauthdemo",
+      "sha256_cert_fingerprints" : [
+        "1F:C6:9A:27:1D:E5:39:90:9A:C5:59:EC:65:4E:7F:FC:02:E4:56:35:C9:00:B0:35:D6:BB:5E:80:41:34:2D:D7"
+      ]
     }
-  ]
+  }
+]
